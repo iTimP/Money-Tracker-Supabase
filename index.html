@@ -223,6 +223,7 @@ function renderS(){
 }
 const cfg=window.APP_CONFIG||{};
 let sb=null;
+const hint=m=>/fetch|network/i.test(m)?m+' — เชื่อมต่อ Supabase ไม่ได้ ตรวจว่า Project URL ใน config.js ถูกต้อง (รูปแบบ https://xxxx.supabase.co), โปรเจกต์ไม่ถูก Pause, และลองปิดตัวบล็อกโฆษณา/VPN':m;
 function gate(show,msg){$('auth').hidden=!show;$('app').hidden=show;$('out').hidden=show;if(msg!==undefined)$('am').textContent=msg}
 async function importLegacy(){
  const gm={general:'general'};
@@ -239,14 +240,15 @@ async function load(){
  if(!tx.length&&!goals.length&&!sv.length&&(legacy.tx.length||legacy.goals.length||legacy.sv.length))await importLegacy();
  render();renderS()}
 $('af').onsubmit=async e=>{e.preventDefault();$('am').textContent='กำลังเข้าสู่ระบบ...';
- const{error}=await sb.auth.signInWithPassword({email:$('em').value,password:$('pw').value});if(error)$('am').textContent='เข้าสู่ระบบไม่สำเร็จ: '+error.message};
+ const{error}=await sb.auth.signInWithPassword({email:$('em').value,password:$('pw').value});if(error)$('am').textContent='เข้าสู่ระบบไม่สำเร็จ: '+hint(error.message)};
 $('su').onclick=async()=>{if(!$('af').reportValidity())return;$('am').textContent='กำลังสมัคร...';
  const{data,error}=await sb.auth.signUp({email:$('em').value,password:$('pw').value});
- $('am').textContent=error?'สมัครไม่สำเร็จ: '+error.message:(data.session?'':'สมัครแล้ว หากระบบแจ้งให้ยืนยันอีเมล ให้เปิดลิงก์ในอีเมลก่อน แล้วกลับมาเข้าสู่ระบบ')};
+ $('am').textContent=error?'สมัครไม่สำเร็จ: '+hint(error.message):(data.session?'':'สมัครแล้ว หากระบบแจ้งให้ยืนยันอีเมล ให้เปิดลิงก์ในอีเมลก่อน แล้วกลับมาเข้าสู่ระบบ')};
 $('out').onclick=()=>sb.auth.signOut();
-if(!cfg.url||!cfg.anonKey||!window.supabase){gate(true,'ยังไม่ได้ตั้งค่า Supabase: แก้ไฟล์ config.js ตามคำแนะนำใน README');$('af').hidden=true}
+const cfgOk=/^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/i.test(cfg.url||'')&&!/YOUR/i.test(cfg.url)&&cfg.anonKey&&!/YOUR/i.test(cfg.anonKey);
+if(!cfgOk||!window.supabase){gate(true,!cfgOk?'ยังไม่ได้ตั้งค่า Supabase ให้ถูกต้อง: แก้ไฟล์ config.js ให้ใส่ Project URL (รูปแบบ https://xxxx.supabase.co) และ anon key จริง':'โหลดไลบรารี Supabase ไม่สำเร็จ ตรวจอินเทอร์เน็ตหรือปิดตัวบล็อกโฆษณา');$('af').hidden=true}
 else{
- sb=supabase.createClient(cfg.url,cfg.anonKey);
+ sb=supabase.createClient(cfg.url.replace(/\/$/,''),cfg.anonKey);
  sb.auth.onAuthStateChange((ev,ses)=>{
   if(ses){gate(false,'');if(ev==='INITIAL_SESSION'||ev==='SIGNED_IN')setTimeout(load,0)}
   else{tx=[];goals=[];sv=[];gate(true);render();renderS()}});
