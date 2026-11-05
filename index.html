@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>บัญชีรายรับ-รายจ่าย</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f3f6f4;--sf:#fff;--tx:#1d2b27;--mu:#6b7a75;--ln:#dbe4e0;--in:#1f8a5b;--ex:#c9473b;--ac:#173f35;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+:root:not([data-theme="light"]){}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121a17;--sf:#1b2622;--tx:#e8f0ec;--mu:#93a39d;--ln:#2d3b36;--in:#4cc590;--ex:#ee7a6e;--ac:#8fd9b8}}
+:root[data-theme="dark"]{--bg:#121a17;--sf:#1b2622;--tx:#e8f0ec;--mu:#93a39d;--ln:#2d3b36;--in:#4cc590;--ex:#ee7a6e;--ac:#8fd9b8}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:'Noto Sans Thai',system-ui,sans-serif;line-height:1.5}
+main{max-width:760px;margin:0 auto;padding:16px}
+h1{font-size:1.3rem;margin:8px 0 12px}
+.card{background:var(--sf);border:1px solid var(--ln);border-radius:12px;padding:14px;margin-bottom:14px}
+.top{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.mon{display:flex;align-items:center;gap:6px}
+button{font:inherit;cursor:pointer;border:1px solid var(--ln);background:var(--sf);color:var(--tx);border-radius:8px;padding:6px 12px}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+button.p{background:var(--ac);color:var(--bg);border-color:var(--ac);font-weight:600}
+.sum{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center}
+.sum small{color:var(--mu);display:block}
+.sum b{font-size:1.15rem}
+.in{color:var(--in)}.ex{color:var(--ex)}
+form{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+form .w{grid-column:1/-1}
+label{font-size:.85rem;color:var(--mu);display:block}
+input,select{width:100%;font:inherit;padding:8px;border:1px solid var(--ln);border-radius:8px;background:var(--bg);color:var(--tx)}
+.seg{display:flex;gap:6px}.seg button{flex:1}
+.seg button.on.i{background:var(--in);color:#fff;border-color:var(--in)}
+.seg button.on.e{background:var(--ex);color:#fff;border-color:var(--ex)}
+.day{border-top:1px solid var(--ln);padding-top:10px;margin-top:10px}
+.day:first-child{border:0;margin:0;padding:0}
+.dh{display:flex;justify-content:space-between;font-weight:600}
+.dh span{font-size:.85rem;color:var(--mu);font-weight:400}
+.row{display:flex;gap:8px;align-items:center;padding:6px 0}
+.row .d{flex:1;min-width:0}.row .d div:first-child{overflow-wrap:anywhere}
+.row .d small{color:var(--mu)}
+.row .a{font-weight:600;white-space:nowrap}
+.row button{padding:2px 8px;color:var(--mu)}
+.bars{margin-top:6px}.bar{display:flex;align-items:center;gap:8px;font-size:.85rem;margin:3px 0}
+.bar i{display:block;height:8px;background:var(--ex);border-radius:4px}
+.bar span:first-child{width:110px;flex-shrink:0}
+.ch{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:8px}
+.ch b{flex:1;text-align:center}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}
+.wd{font-size:.75rem;color:var(--mu);font-weight:400}
+.cd{padding:8px 0;position:relative}
+.cd.td{border-color:var(--ac)}
+.cd.on{background:var(--ac);color:var(--bg);border-color:var(--ac);font-weight:700}
+.cd.hs::after{content:"";position:absolute;bottom:3px;left:50%;width:5px;height:5px;margin-left:-2.5px;border-radius:50%;background:var(--in)}
+.cd.on.hs::after{background:var(--bg)}
+.mtot{font-size:.85rem;color:var(--mu);text-align:center;margin-top:8px}
+.tabs{display:flex;gap:6px;margin-bottom:12px}.tabs button{flex:1;font-weight:600}
+.tabs button.on{background:var(--ac);color:var(--bg);border-color:var(--ac)}
+.seg2{display:flex;gap:6px}.seg2 button{flex:1}
+.seg2 button.on.i{background:var(--in);color:#fff;border-color:var(--in)}
+.seg2 button.on.e{background:var(--ex);color:#fff;border-color:var(--ex)}
+.gl{padding:10px 0;border-top:1px solid var(--ln)}.gl:first-child{border:0}
+.pb{height:8px;background:var(--ln);border-radius:4px;margin:6px 0}
+.pb i{display:block;height:100%;background:var(--in);border-radius:4px}
+.dl{padding:2px 8px;color:var(--mu);font-size:.8rem}
+.empty{color:var(--mu);text-align:center;padding:16px}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+</head>
+<body>
+<main>
+<div style="display:flex;justify-content:space-between;align-items:center"><h1>สมุดบัญชีรายวัน</h1><button id="out" hidden>ออกจากระบบ</button></div>
+<div id="auth" class="card" hidden><b>เข้าสู่ระบบเพื่อใช้งาน</b>
+<form id="af" style="margin-top:8px"><div class="w"><label for="em">อีเมล</label><input id="em" type="email" required autocomplete="email"></div>
+<div class="w"><label for="pw">รหัสผ่าน (อย่างน้อย 6 ตัวอักษร)</label><input id="pw" type="password" minlength="6" required autocomplete="current-password"></div>
+<div class="w seg2"><button class="p" id="li">เข้าสู่ระบบ</button><button type="button" id="su">สมัครสมาชิก</button></div></form>
+<div id="am" class="ex" role="alert" style="font-size:.85rem;margin-top:8px"></div></div>
+<div id="app" hidden>
+<div class="tabs"><button id="tA" class="on">รายรับ-รายจ่าย</button><button id="tB">เงินเก็บ</button></div>
+<div id="vA">
+<div class="card">
+<div class="ch"><button id="prev" aria-label="เดือนก่อน">‹</button><b id="mt"></b><button id="next" aria-label="เดือนถัดไป">›</button><button id="tdy">วันนี้</button></div>
+<div class="cal" id="cal"></div>
+<div class="mtot" id="mtot"></div>
+</div>
+
+<div id="st" class="empty" role="status" style="padding:0 0 10px;text-align:left;font-size:.85rem"></div>
+<h2 id="dt" style="font-size:1.05rem;margin:4px 0 8px"></h2>
+<div class="card sum">
+<div><small>รายรับ</small><b class="in" id="sIn">0</b></div>
+<div><small>รายจ่าย</small><b class="ex" id="sEx">0</b></div>
+<div><small>คงเหลือ</small><b id="sBal">0</b></div>
+</div>
+
+<div class="card">
+<form id="f">
+<div class="w seg"><button type="button" class="on e" data-t="e">รายจ่าย</button><button type="button" class="i" data-t="i">รายรับ</button></div>
+<div><label for="date">วันที่</label><input type="date" id="date" required></div>
+<div><label for="amt">จำนวนเงิน (บาท)</label><input type="number" id="amt" min="0.01" step="0.01" inputmode="decimal" required></div>
+<div id="catw"><label for="cat">หมวดหมู่</label><select id="cat"></select></div>
+<div><label for="note">รายละเอียด</label><input type="text" id="note" placeholder="เช่น ข้าวมันไก่ + น้ำ" maxlength="120"></div>
+<div class="w"><button class="p" style="width:100%">บันทึกรายการ</button></div>
+</form>
+</div>
+
+<div class="card"><b>รายจ่ายของวันนี้ตามหมวด</b><div class="bars" id="bars"></div></div>
+
+<div class="card"><input type="search" id="q" placeholder="ค้นหาในวันที่เลือก" aria-label="ค้นหา" style="margin-bottom:10px"><div id="list"></div></div>
+</div>
+<div id="vB" hidden>
+<div class="card sum" style="grid-template-columns:1fr"><div><small>เงินเก็บรวมทั้งหมด (บาท)</small><b class="in" id="svTot" style="font-size:1.6rem">0</b></div></div>
+<div class="card"><b>เป้าหมายการออม</b><div id="goals"></div>
+<form id="gf" style="margin-top:8px"><div><label for="gn">ชื่อเป้าหมาย</label><input id="gn" required maxlength="40" placeholder="เช่น กองทุนฉุกเฉิน"></div>
+<div><label for="gt">ยอดเป้าหมาย (บาท)</label><input id="gt" type="number" min="1" step="any" inputmode="decimal" placeholder="ไม่ใส่ก็ได้"></div>
+<div class="w"><button class="p" style="width:100%">เพิ่มเป้าหมาย</button></div></form></div>
+<div class="card"><form id="sf">
+<div class="w seg2"><button type="button" class="on i" data-s="d">ฝากเงิน</button><button type="button" class="e" data-s="w">ถอนเงิน</button></div>
+<div><label for="sd">วันที่</label><input type="date" id="sd" required></div>
+<div><label for="sa">จำนวนเงิน (บาท)</label><input type="number" id="sa" min="0.01" step="0.01" inputmode="decimal" required></div>
+<div><label for="sg">เป้าหมาย</label><select id="sg"></select></div>
+<div><label for="sn">รายละเอียด</label><input type="text" id="sn" maxlength="120" placeholder="เช่น โอนเข้าบัญชีออมทรัพย์"></div>
+<div class="w"><button class="p" style="width:100%">บันทึกเงินเก็บ</button><div id="sm" class="ex" role="alert" style="font-size:.85rem;margin-top:6px"></div></div>
+</form></div>
+<div class="card"><b>ประวัติเงินเก็บ</b><div id="svl"></div></div>
+</div>
+</div>
+</main>
+<script>
+const CATS={e:['อาหาร','ค่าโทรศัพท์','รายการผ่อน','ค่าน้ำมันรถ','อื่นๆ'],i:['เงินเดือน','รายได้เสริม','อื่นๆ']};
+const KEY='money-tracker-v1';
+let tx=[],type='e',goals=[],sv=[];
+let legacy={tx:[],goals:[],sv:[]};
+try{legacy={tx:JSON.parse(localStorage.getItem(KEY)||'[]'),goals:JSON.parse(localStorage.getItem(KEY+'-g')||'[]'),sv:JSON.parse(localStorage.getItem(KEY+'-s')||'[]')}}catch(e){}
+const $=id=>document.getElementById(id);
+const save=()=>{};
+const fmt=n=>n.toLocaleString('th-TH',{minimumFractionDigits:0,maximumFractionDigits:2});
+const today=()=>{const d=new Date();return new Date(d-d.getTimezoneOffset()*6e4).toISOString().slice(0,10)};
+let sel=today(),view=sel.slice(0,7);$('date').value=sel;
+function fillCats(){$('cat').innerHTML=CATS[type].map(c=>`<option>${c}</option>`).join('')}
+fillCats();
+document.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{
+ type=b.dataset.t;document.querySelectorAll('.seg button').forEach(x=>x.classList.toggle('on',x===b));fillCats()});
+$('f').onsubmit=e=>{e.preventDefault();
+ add({id:crypto.randomUUID(),ts:Date.now(),t:type,date:$('date').value,amt:+$('amt').value,cat:$('cat').value,note:$('note').value.trim()});
+ $('amt').value='';$('note').value='';sel=$('date').value;view=sel.slice(0,7);render()};
+function shift(n){const[y,m]=view.split('-').map(Number);const d=new Date(y,m-1+n,1);
+ view=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');cal()}
+$('prev').onclick=()=>shift(-1);$('next').onclick=()=>shift(1);
+$('tdy').onclick=()=>pick(today());$('date').onchange=()=>{if($('date').value)pick($('date').value)};
+$('q').oninput=render;
+function pick(d){sel=d;view=d.slice(0,7);$('date').value=d;render()}
+const norm=x=>CATS[x.t].includes(x.cat)?x:{...x,cat:'อื่นๆ'};
+function cal(){
+ const[y,m]=view.split('-').map(Number);
+ $('mt').textContent=new Date(y,m-1,1).toLocaleDateString('th-TH',{month:'long',year:'numeric'});
+ const first=new Date(y,m-1,1).getDay(),n=new Date(y,m,0).getDate();
+ const mt=tx.filter(x=>x.date.startsWith(view)),has=new Set(mt.map(x=>x.date));
+ const mi=mt.filter(x=>x.t==='i').reduce((a,x)=>a+x.amt,0),me=mt.filter(x=>x.t==='e').reduce((a,x)=>a+x.amt,0);
+ $('mtot').textContent='ทั้งเดือน: รับ '+fmt(mi)+' / จ่าย '+fmt(me);
+ let h=['อา','จ','อ','พ','พฤ','ศ','ส'].map(d=>`<span class="wd">${d}</span>`).join('')+'<i></i>'.repeat(first);
+ for(let d=1;d<=n;d++){const ds=view+'-'+String(d).padStart(2,'0');
+  h+=`<button type="button" class="cd${ds===sel?' on':''}${ds===today()?' td':''}${has.has(ds)?' hs':''}" data-d="${ds}" aria-pressed="${ds===sel}">${d}</button>`}
+ $('cal').innerHTML=h;
+ $('cal').querySelectorAll('.cd').forEach(b=>b.onclick=()=>pick(b.dataset.d));
+}
+const esc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const dayName=s=>new Date(s+'T00:00:00').toLocaleDateString('th-TH',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+function render(){
+ cal();
+ const q=$('q').value.trim().toLowerCase();
+ const all=tx.filter(x=>x.date===sel).map(norm);
+ $('dt').textContent='รายงานวัน'+dayName(sel);
+ const inc=all.filter(x=>x.t==='i').reduce((a,x)=>a+x.amt,0),exp=all.filter(x=>x.t==='e').reduce((a,x)=>a+x.amt,0);
+ $('sIn').textContent=fmt(inc);$('sEx').textContent=fmt(exp);
+ const bal=inc-exp;$('sBal').textContent=fmt(bal);$('sBal').className=bal>=0?'in':'ex';
+ const by={};CATS.e.forEach(c=>by[c]=0);all.filter(x=>x.t==='e').forEach(x=>by[x.cat]+=x.amt);
+ const mx=Math.max(...Object.values(by));
+ $('bars').innerHTML=exp?CATS.e.map(c=>{const v=by[c];return `<div class="bar"><span>${c}</span><i style="width:${v?Math.max(3,v/mx*45):0}%"></i><span>${fmt(v)} (${Math.round(v/exp*100)}%)</span></div>`}).join(''):'<div class="empty">ไม่มีรายจ่ายในวันนี้</div>';
+ const list=all.filter(x=>!q||(x.note+x.cat).toLowerCase().includes(q)).sort((a,b)=>b.ts-a.ts);
+ if(!list.length){$('list').innerHTML='<div class="empty">ไม่มีรายการในวันนี้ เพิ่มได้จากฟอร์มด้านบน</div>';return}
+ $('list').innerHTML=list.map(x=>`<div class="row"><div class="d"><div>${esc(x.note||x.cat)}</div><small>${esc(x.cat)}</small></div><div class="a ${x.t==='i'?'in':'ex'}">${x.t==='i'?'+':'-'}${fmt(x.amt)}</div><button data-id="${x.id}" aria-label="ลบรายการ">ลบ</button></div>`).join('');
+ $('list').querySelectorAll('button[data-id]').forEach(b=>b.onclick=()=>{if(b.dataset.arm){del(b.dataset.id);return}b.dataset.arm='1';b.textContent='ยืนยันลบ';b.style.color='var(--ex)';setTimeout(()=>{if(b.isConnected){delete b.dataset.arm;b.textContent='ลบ';b.style.color=''}},3000)});
+}
+
+const status=t=>{$('st').textContent=t};
+function add(x){tx.push(x);dbSet('t'+x.id,x)}
+function del(id){tx=tx.filter(x=>x.id!=id);dbDel('t'+id);render()}
+const GEN={id:'general',name:'เงินเก็บทั่วไป'};
+let sty='d';
+const TB={t:'transactions',g:'goals',s:'savings'};
+async function dbSet(k,o){if(!sb)return;const{error}=await sb.from(TB[k[0]]).upsert(o);if(error)alert2('บันทึกไม่สำเร็จ: '+error.message)}
+async function dbDel(k){if(!sb)return;const{error}=await sb.from(TB[k[0]]).delete().eq('id',k.slice(1));if(error)alert2('ลบไม่สำเร็จ: '+error.message)}
+const alert2=t=>{$('st').textContent=t;$('sm').textContent=t};
+function arm(b,fn){b.onclick=()=>{if(b.dataset.arm){fn();return}b.dataset.arm='1';const t=b.textContent;b.textContent='ยืนยันลบ';b.style.color='var(--ex)';setTimeout(()=>{if(b.isConnected){delete b.dataset.arm;b.textContent=t;b.style.color=''}},3000)}}
+const sgn=x=>x.t==='d'?x.amt:-x.amt;
+const gbal=id=>sv.filter(x=>x.goal===id).reduce((a,x)=>a+sgn(x),0);
+function tab(w){$('vA').hidden=w!=='A';$('vB').hidden=w!=='B';$('tA').classList.toggle('on',w==='A');$('tB').classList.toggle('on',w==='B')}
+$('tA').onclick=()=>tab('A');$('tB').onclick=()=>tab('B');
+$('sd').value=today();
+document.querySelectorAll('.seg2 button').forEach(b=>b.onclick=()=>{sty=b.dataset.s;document.querySelectorAll('.seg2 button').forEach(x=>x.classList.toggle('on',x===b))});
+$('gf').onsubmit=e=>{e.preventDefault();const g={id:crypto.randomUUID(),ts:Date.now(),name:$('gn').value.trim(),target:+$('gt').value||0};
+ goals.push(g);save();dbSet('g'+g.id,g);$('gn').value='';$('gt').value='';renderS()};
+$('sf').onsubmit=e=>{e.preventDefault();const amt=+$('sa').value,goal=$('sg').value;
+ if(sty==='w'&&amt>gbal(goal)){$('sm').textContent='ถอนเกินยอดเงินเก็บของเป้าหมายนี้ ('+fmt(gbal(goal))+' บาท)';return}
+ $('sm').textContent='';const x={id:crypto.randomUUID(),ts:Date.now(),goal,t:sty,date:$('sd').value,amt,note:$('sn').value.trim()};
+ sv.push(x);save();dbSet('s'+x.id,x);$('sa').value='';$('sn').value='';renderS()};
+function delG(id){const es=sv.filter(x=>x.goal===id);goals=goals.filter(g=>g.id!==id);sv=sv.filter(x=>x.goal!==id);save();dbDel('g'+id);es.forEach(x=>dbDel('s'+x.id));renderS()}
+function delS(id){sv=sv.filter(x=>x.id!=id);save();dbDel('s'+id);renderS()}
+function renderS(){
+ const all=[GEN,...goals];
+ $('svTot').textContent=fmt(sv.reduce((a,x)=>a+sgn(x),0));
+ $('goals').innerHTML=all.map(g=>{const b=gbal(g.id),p=g.target?Math.max(0,Math.min(100,b/g.target*100)):0;
+  return `<div class="gl"><div class="dh">${esc(g.name)}<span>${fmt(b)}${g.target?' / '+fmt(g.target)+' ('+Math.round(p)+'%)':''}</span></div>${g.target?`<div class="pb"><i style="width:${p}%"></i></div>`:''}${g.id!=='general'?`<button class="dl" data-g="${g.id}">ลบเป้าหมาย</button>`:''}</div>`}).join('');
+ $('goals').querySelectorAll('button[data-g]').forEach(b=>arm(b,()=>delG(b.dataset.g)));
+ const cur=$('sg').value;
+ $('sg').innerHTML=all.map(g=>`<option value="${g.id}">${esc(g.name)}</option>`).join('');
+ if(all.some(g=>g.id===cur))$('sg').value=cur;
+ const l=[...sv].sort((a,b)=>b.date.localeCompare(a.date)||b.ts-a.ts);
+ $('svl').innerHTML=l.length?l.map(x=>{const g=all.find(g=>g.id===x.goal)||GEN;
+  return `<div class="row"><div class="d"><div>${esc(x.note||(x.t==='d'?'ฝากเงิน':'ถอนเงิน'))}</div><small>${x.date} · ${esc(g.name)}</small></div><div class="a ${x.t==='d'?'in':'ex'}">${x.t==='d'?'+':'-'}${fmt(x.amt)}</div><button data-s="${x.id}" aria-label="ลบรายการ">ลบ</button></div>`}).join(''):'<div class="empty">ยังไม่มีประวัติ เริ่มฝากเงินได้จากฟอร์มด้านบน</div>';
+ $('svl').querySelectorAll('button[data-s]').forEach(b=>arm(b,()=>delS(b.dataset.s)));
+}
+const cfg=window.APP_CONFIG||{};
+let sb=null;
+function gate(show,msg){$('auth').hidden=!show;$('app').hidden=show;$('out').hidden=show;if(msg!==undefined)$('am').textContent=msg}
+async function importLegacy(){
+ const gm={general:'general'};
+ const g=legacy.goals.map(x=>{const id=crypto.randomUUID();gm[x.id]=id;return{id,ts:+x.id||Date.now(),name:x.name,target:x.target||0}});
+ const t=legacy.tx.map(x=>({id:crypto.randomUUID(),ts:+x.id||Date.now(),t:x.t,date:x.date,amt:x.amt,cat:x.cat,note:x.note||''}));
+ const s=legacy.sv.map(x=>({id:crypto.randomUUID(),ts:+x.id||Date.now(),goal:gm[x.goal]||'general',t:x.t,date:x.date,amt:x.amt,note:x.note||''}));
+ const r=await Promise.all([t.length&&sb.from('transactions').insert(t),g.length&&sb.from('goals').insert(g),s.length&&sb.from('savings').insert(s)]);
+ const e=r.find(x=>x&&x.error);if(e)return status('นำเข้าข้อมูลเดิมไม่สำเร็จ: '+e.error.message);
+ tx=t;goals=g;sv=s;status('นำเข้าข้อมูลเดิมจากเบราว์เซอร์แล้ว')}
+async function load(){
+ const[a,b,c]=await Promise.all([sb.from('transactions').select('*'),sb.from('goals').select('*'),sb.from('savings').select('*')]);
+ const er=a.error||b.error||c.error;if(er)return status('โหลดข้อมูลไม่สำเร็จ: '+er.message);
+ tx=a.data;goals=b.data;sv=c.data;status('');
+ if(!tx.length&&!goals.length&&!sv.length&&(legacy.tx.length||legacy.goals.length||legacy.sv.length))await importLegacy();
+ render();renderS()}
+$('af').onsubmit=async e=>{e.preventDefault();$('am').textContent='กำลังเข้าสู่ระบบ...';
+ const{error}=await sb.auth.signInWithPassword({email:$('em').value,password:$('pw').value});if(error)$('am').textContent='เข้าสู่ระบบไม่สำเร็จ: '+error.message};
+$('su').onclick=async()=>{if(!$('af').reportValidity())return;$('am').textContent='กำลังสมัคร...';
+ const{data,error}=await sb.auth.signUp({email:$('em').value,password:$('pw').value});
+ $('am').textContent=error?'สมัครไม่สำเร็จ: '+error.message:(data.session?'':'สมัครแล้ว หากระบบแจ้งให้ยืนยันอีเมล ให้เปิดลิงก์ในอีเมลก่อน แล้วกลับมาเข้าสู่ระบบ')};
+$('out').onclick=()=>sb.auth.signOut();
+if(!cfg.url||!cfg.anonKey||!window.supabase){gate(true,'ยังไม่ได้ตั้งค่า Supabase: แก้ไฟล์ config.js ตามคำแนะนำใน README');$('af').hidden=true}
+else{
+ sb=supabase.createClient(cfg.url,cfg.anonKey);
+ sb.auth.onAuthStateChange((ev,ses)=>{
+  if(ses){gate(false,'');if(ev==='INITIAL_SESSION'||ev==='SIGNED_IN')setTimeout(load,0)}
+  else{tx=[];goals=[];sv=[];gate(true);render();renderS()}});
+}
+render();renderS();
+
+</script>
+</body>
+</html>
