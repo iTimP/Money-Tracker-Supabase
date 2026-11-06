@@ -87,8 +87,9 @@ input,select{width:100%;font:inherit;padding:8px;border:1px solid var(--ln);bord
 
 <div id="st" class="empty" role="status" style="padding:0 0 10px;text-align:left;font-size:.85rem"></div>
 <h2 id="dt" style="font-size:1.05rem;margin:4px 0 8px"></h2>
+<div id="cf" class="mtot" style="margin:-4px 0 8px;text-align:left"></div>
 <div class="card sum">
-<div><small>รายรับ</small><b class="in" id="sIn">0</b></div>
+<div><small>รายรับ (รวมยกมา)</small><b class="in" id="sIn">0</b></div>
 <div><small>รายจ่าย</small><b class="ex" id="sEx">0</b></div>
 <div><small>คงเหลือ</small><b id="sBal">0</b></div>
 </div>
@@ -172,8 +173,9 @@ function render(){
  const all=tx.filter(x=>x.date===sel).map(norm);
  $('dt').textContent='รายงานวัน'+dayName(sel);
  const inc=all.filter(x=>x.t==='i').reduce((a,x)=>a+x.amt,0),exp=all.filter(x=>x.t==='e').reduce((a,x)=>a+x.amt,0);
- $('sIn').textContent=fmt(inc);$('sEx').textContent=fmt(exp);
- const bal=inc-exp;$('sBal').textContent=fmt(bal);$('sBal').className=bal>=0?'in':'ex';
+ const cf=tx.filter(x=>x.date<sel).reduce((a,x)=>a+(x.t==='i'?x.amt:-x.amt),0);
+ $('sIn').textContent=fmt(cf+inc);$('sEx').textContent=fmt(exp);
+ const bal=cf+inc-exp;$('cf').textContent='ยกมาจากวันก่อนหน้า: '+fmt(cf)+' บาท (รวมอยู่ในช่องรายรับแล้ว)';$('sBal').textContent=fmt(bal);$('sBal').className=bal>=0?'in':'ex';
  const by={};CATS.e.forEach(c=>by[c]=0);all.filter(x=>x.t==='e').forEach(x=>by[x.cat]+=x.amt);
  const mx=Math.max(...Object.values(by));
  $('bars').innerHTML=exp?CATS.e.map(c=>{const v=by[c];return `<div class="bar"><span>${c}</span><i style="width:${v?Math.max(3,v/mx*45):0}%"></i><span>${fmt(v)} (${Math.round(v/exp*100)}%)</span></div>`}).join(''):'<div class="empty">ไม่มีรายจ่ายในวันนี้</div>';
